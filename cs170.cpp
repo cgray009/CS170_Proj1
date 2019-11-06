@@ -1,13 +1,7 @@
-/* 
- * File:   main.cpp
- * Author: Christian
- *
- * Created on November 3, 2019, 1:58 AM
- */
-
 #include <cstdlib>
 #include <iostream>
 #include <bits/stdc++.h>
+#include <queue>
 #include <vector>
 using namespace std;
 
@@ -40,8 +34,20 @@ Node* newNode(char arr[], int level, Node* parent)
   
     return node; 
 }
+
+// converts character array 
+// to string and returns it 
+string convertToString(char* a, int size) 
+{ 
+    int i; 
+    string s = ""; 
+    for (i = 0; i < size; i++) { 
+        s = s + a[i]; 
+    } 
+    return s; 
+} 
   
-vector<Node*> makeNode(char problem[], int size)
+Node* makeNode(char problem[], int size)
 {
     int b;
     int x;
@@ -49,265 +55,153 @@ vector<Node*> makeNode(char problem[], int size)
     Node* root = newNode(problem, 0, NULL);
     // Create a priority queue to store live nodes of 
     // search tree; 
-    vector<Node*> nodes;
-    nodes.push_back(root);
+    queue<Node*> nodes;
+    vector<Node*> popped_nodes;
+    nodes.push(root);
     int size_nodes = nodes.size();
-    // Find the location of the empty space.
-    
     int const SIZE = 9;
     char goal_state[SIZE] = {'1', '2', '3', '4', '5', '6', '7', '8', 'b'};
     int goal = 0;
-        
-    while(goal < 1)
+    int level = 0;
+    
+    while(!nodes.empty())
     {
-        int count = 0;
-        for(int i = 0; i < size; i++)
+        int duplicates = 0;
+        Node* node = nodes.front();
+        popped_nodes.push_back(node);
+        nodes.pop();
+        int popped_size = popped_nodes.size();
+        int move_left, move_right, move_up, move_down = 0;
+
+        for(int i = 0; i < popped_size; i++)
         {
-            for(int x = 0; x < size; x++)
-                if(nodes[count]->problem[x] == 'b')
-                    b = x;
-            
-            // Swap tiles.
-            switch(b)
+            string string_a = convertToString(popped_nodes[i]->problem, size);
+            string string_b = convertToString(goal_state, size);
+
+            if(string_a == string_b)
+                return popped_nodes[i];
+            else
             {
-                int duplicates = 0;
-                case 0:
-                    // First arrangement
-                    Node* adult = nodes.back();            
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[1];
-                    node2->problem[1] = x;
-                    
-                    for(int a = 0; a < count + 1; a++)
+                for(int j = 0; j < SIZE; j++)
+                {
+                    if(popped_nodes[i]->problem[j] != goal_state[j])
                     {
-                        for(int b = 0; b < size; b++)
+                        move_left = j - 1;
+                        move_right = j + 1;
+                        move_up = j - 3;
+                        move_down = j + 3;
+                        
+                        // Move tile left
+                        if(move_left > -1 && move_left < 9)
                         {
-                            if(nodes[a]->problem[b] == node2->problem[b])
-                                duplicates = 1;
-                            if(nodes[a]->problem[b] == goal_state[b])
-                                goal = 1;
+                            Node* new_node = newNode(popped_nodes[i]->problem, level, node);
+                            x = new_node->problem[j];
+                            new_node->problem[j] = new_node->problem[move_left];
+                            new_node->problem[move_left] = x;
+                            
+                            for(int m = 0; m < popped_size; m++)
+                            {
+                                string string_a = convertToString(popped_nodes[m]->problem, size);
+                                string string_b = convertToString(new_node->problem, size);
+                                cout << "string a: " << string_a << endl;
+                                cout << "string b: " << string_b << endl;
+                                if(string_a != string_b)
+                                    duplicates = 1;                
+                            }
+
+                            cout << "dup: " << duplicates << endl;
+                            if(duplicates)
+                                nodes.push(new_node);
                         }
+                        
+                        // Move tile right
+                        if(move_right > -1 && move_right < 9)
+                        {
+                            Node* new_node = newNode(popped_nodes[i]->problem, level, node);
+                            x = new_node->problem[j];
+                            new_node->problem[j] = new_node->problem[move_right];
+                            new_node->problem[move_right] = x;
+                            
+                            for(int m = 0; m < popped_size; m++)
+                            {
+                                string string_a = convertToString(popped_nodes[m]->problem, size);
+                                string string_b = convertToString(new_node->problem, size);
+                                cout << "string a: " << string_a << endl;
+                                cout << "string b: " << string_b << endl;
+                                if(string_a != string_b)
+                                    duplicates = 1;                
+                            }
+
+                            cout << "dup: " << duplicates << endl;
+                            if(duplicates)
+                                nodes.push(new_node);
+                        }
+                        
+                        // Move tile up
+                        if(move_up > -1 && move_up < 9)
+                        {
+                            Node* new_node = newNode(popped_nodes[i]->problem, level, node);
+                            x = new_node->problem[j];
+                            new_node->problem[j] = new_node->problem[move_up];
+                            new_node->problem[move_up] = x;
+                            
+                            for(int m = 0; m < popped_size; m++)
+                            {
+                                string string_a = convertToString(popped_nodes[m]->problem, size);
+                                string string_b = convertToString(new_node->problem, size);
+                                cout << "string a: " << string_a << endl;
+                                cout << "string b: " << string_b << endl;
+                                if(string_a != string_b)
+                                    duplicates = 1;                
+                            }
+
+                            cout << "dup: " << duplicates << endl;
+                            if(duplicates)
+                                nodes.push(new_node);
+                        }
+                        
+                        // Move tile down
+                        if(move_down > -1 && move_down < 9)
+                        {
+                            Node* new_node = newNode(popped_nodes[i]->problem, level, node);
+                            x = new_node->problem[j];
+                            new_node->problem[j] = new_node->problem[move_down];
+                            new_node->problem[move_down] = x;
+                            
+                            for(int m = 0; m < popped_size; m++)
+                            {
+                                string string_a = convertToString(popped_nodes[m]->problem, size);
+                                string string_b = convertToString(new_node->problem, size);
+                                cout << "string a: " << string_a << endl;
+                                cout << "string b: " << string_b << endl;
+                                if(string_a != string_b)
+                                    duplicates = 1;                
+                            }
+
+                            cout << "dup: " << duplicates << endl;
+                            if(duplicates)
+                                nodes.push(new_node);
+                        }                    
                     }
-                        
-                    if(!duplicates)
-                        nodes.push_back(node2);
-                    duplicates = 0;
-                        
-
-                    // Second arrangement
-                    Node* node3 = newNode(nodes[count]->problem, count, adult);
-                    x = node3->problem[b];
-                    node3->problem[b] = node3->problem[3];
-                    node3->problem[3] = x;
-                    nodes.push_back(node3); 
-
-                case 1:
-                    // First arrangement
-                    Node* adult = nodes.back();            
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[0];
-                    node2->problem[0] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[2];
-                    node2->problem[2] = x;
-                    nodes.push_back(node2);
-
-                    // Third arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[4];
-                    node2->problem[4] = x;
-                    nodes.push_back(node2);
-
-                case 2:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[1];
-                    node2->problem[1] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* adult = nodes.back();
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[5];
-                    node2->problem[5] = x;
-                    nodes.push_back(node2);
-
-                case 3:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[0];
-                    node2->problem[0] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[4];
-                    node2->problem[4] = x;
-                    nodes.push_back(node2);
-
-                    // Third arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[6];
-                    node2->problem[6] = x;
-                    nodes.push_back(node2);
-
-                case 4:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[1];
-                    node2->problem[1] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[3];
-                    node2->problem[3] = x;
-                    nodes.push_back(node2);
-
-                    // Third arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[5];
-                    node2->problem[5] = x;
-                    nodes.push_back(node2);
-
-                    // Fourth arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[7];
-                    node2->problem[7] = x;
-                    nodes.push_back(node2);
-
-                case 5:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[2];
-                    node2->problem[2] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[4];
-                    node2->problem[4] = x;
-                    nodes.push_back(node2);
-
-                    // Third arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[8];
-                    node2->problem[8] = x;
-                    nodes.push_back(node2);
-
-                case 6:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[3];
-                    node2->problem[3] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* adult = nodes.back();
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[7];
-                    node2->problem[7] = x;
-                    nodes.push_back(node2);
-
-                case 7:
-                    // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[4];
-                    node2->problem[4] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[6];
-                    node2->problem[6] = x;
-                    nodes.push_back(node2);
-
-                    // Third arrangement
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[8];
-                    node2->problem[8] = x;
-                    nodes.push_back(node2);
-
-                case 8:
-                     // First arrangement
-                    Node* adult = nodes.back(); 
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[5];
-                    node2->problem[5] = x;
-                    nodes.push_back(node2);
-
-                    // Second arrangement
-                    Node* adult = nodes.back();
-                    Node* node2 = newNode(nodes[count]->problem, count, adult);
-                    x = node2->problem[b];
-                    node2->problem[b] = node2->problem[7];
-                    node2->problem[7] = x;
-                    nodes.push_back(node2);
+                }
+                 
+                // Increment level
+                level += 1;
             }
-            
-            // Increment count
-            count++;
-        }
+        }   
     }
-          
-    
-    /* Calculate branching factor.
-    int num_nodes;
-            
-    if(b == 4)
-        num_nodes = 4;
-    else if(b == 0 || b == 2 || b == 6 || b == 8)
-        num_nodes = 2;
-    else
-        num_nodes = 3;
-    
-     */
-    
-    
-    return nodes;
 }
 
 int main(int argc, char** argv) 
 {
     int const SIZE = 9;
-    char user[SIZE] = {'b', '2', '3', '4', '8', '1', '7', '6', '5'};
-    vector<Node*> vect;
+    char user[SIZE] = {'1', '2', '4', '3', '5', '6', '7', '8', 'b'};
+    Node* vect;
     vect = makeNode(user, SIZE);
-    char parent[9];
-    //for(int i = 0; i < vect.size(); i++)
-        for(int j = 0; j < SIZE; j++)
-            cout << vect[2]->problem[j] << " ";
-    
+    for(int i = 0; i < SIZE; i++)
+        cout << vect->problem[i] << " ";
+    cout << endl;
+    //'b', '2', '3', '4', '8', '1', '7', '6', '5'
     return 0;
 }
+

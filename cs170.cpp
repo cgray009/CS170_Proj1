@@ -485,8 +485,7 @@ Node* makeNode(char problem[], int size)
                     duplicates = 1;                
 
                 if(duplicates)
-                    nodes.push(new_node);
-                   // heuristic.push_back(new_node);                        
+                    heuristic.push_back(new_node);                        
             }
 
             // Move tile right
@@ -506,8 +505,7 @@ Node* makeNode(char problem[], int size)
                     duplicates = 1;                
 
                 if(duplicates)
-                    nodes.push(new_node);
-                    //heuristic.push_back(new_node);
+                    heuristic.push_back(new_node);
             }
 
             // Move tile up
@@ -526,8 +524,7 @@ Node* makeNode(char problem[], int size)
                     duplicates = 1;                
 
                 if(duplicates)
-                    nodes.push(new_node);
-                    //heuristic.push_back(new_node);
+                    heuristic.push_back(new_node);
             }
 
             // Move tile down
@@ -547,50 +544,17 @@ Node* makeNode(char problem[], int size)
                     duplicates = 1;                
 
                 if(duplicates)
-                    nodes.push(new_node);
-                    //heuristic.push_back(new_node);
+                    heuristic.push_back(new_node);
             }   
-/*
-            cout << "LEVEL: " << level << endl;
 
             // Push by shortest heuristic
-            for(int i = 0; i < heuristic.size(); i++)
-            heuristic[i]->heuristic = manhattanHeuristic(heuristic[i]);
-
-            cout << "pre-sort\n";
-            for(int i = 0; i < heuristic.size(); i++)
-                cout << heuristic[i]->heuristic << " ";
-            cout << endl;
-
             vector<Node*> temp;
-
-            temp.clear();
+            for(int i = 0; i < heuristic.size(); i++)
+                heuristic[i]->heuristic = manhattanHeuristic(heuristic[i]);
             temp = sortVect(heuristic);
-            temp2.push_back(temp[0]);
-
-
-            cout << "post-sort\n";
-            for(int i = 0; i < temp.size(); i++)
-                cout << temp[i]->heuristic << " ";
-            cout << endl;
-
-            cout << "NODES: " << endl;
-            for(int i = 0; i < temp2.size(); i++)
-                cout << temp2[i]->heuristic << " ";
-            cout << endl;
-            cout << "size: " << temp2.size() << endl;
-
-            /*
-            cout << "NODES: " << endl;
-            for(int i = 0; i < nodes.size(); i++)
-            {
-                cout << nodes.front()->heuristic << " ";
-                nodes.pop();
-            }
-            cout << endl; */
-
-        }
-           
+            nodes.push(temp[0]);
+            heuristic.clear();
+        }   
     }
 }
 

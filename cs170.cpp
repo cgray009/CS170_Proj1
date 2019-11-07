@@ -417,7 +417,7 @@ vector<Node*> sortVect(vector<Node*> vect)
     return vect;
 }  
 
-Node* makeNode(char problem[], int size)
+Node* makeNodeManhattan(char problem[], int size)
 {
     int b;
     int x;
@@ -558,19 +558,170 @@ Node* makeNode(char problem[], int size)
     }
 }
 
+int misplacedTileHeuristic(struct Node* node)
+{
+    int const SIZE = 9;
+    char goal_node = {'1', '2', '3', '4', '5', '6', '7', '8', 'b'};
+    int h_n = 0;
+    
+    for(int i = 0; i < SIZE; i++)
+        if(node->problem[i] != goal_node[i])
+            h_n += 1;
+    
+    return node->level + h_n;
+}
+
+Node* makeNodeMisplaced(char problem[], int size)
+{
+    int b;
+    int x;
+    // Create a root node.
+    Node* root = newNode(problem, 0, NULL);
+    // Create a priority queue to store live nodes of 
+    // search tree; 
+    queue<Node*> nodes;
+    vector<Node*> popped_nodes;
+    vector<Node*> heuristic;
+    nodes.push(root);
+    int size_nodes = nodes.size();
+    int const SIZE = 9;
+    char goal_state[SIZE] = {'1', '2', '3', '4', '5', '6', '7', '8', 'b'};
+    int goal = 0;
+    int level = 0;
+    vector<Node*> temp2;
+    
+    while(!nodes.empty())
+    {
+        int duplicates = 0;
+        Node* node = nodes.front();
+        popped_nodes.push_back(node);
+        nodes.pop();
+        int popped_size = popped_nodes.size();
+        int move_left, move_right, move_up, move_down = 0;
+
+        
+        string string_a = convertToString(node->problem, size);
+        string string_b = convertToString(goal_state, size);
+
+        if(string_a == string_b)
+            return node;
+        else
+        {
+            int b_loc = 0;
+
+            // Get b's location
+            for(int i = 0; i < SIZE; i++)
+                if(node->problem[i] == 'b')
+                    b_loc = i;
+
+            // Operators
+            move_left = b_loc - 1;
+            move_right = b_loc + 1;
+            move_up = b_loc - 3;
+            move_down = b_loc + 3;
+
+            // Increment level
+            level += 1;
+
+            // Move tile left
+            if(move_left > -1 && move_left < size)
+            {
+                Node* new_node = newNode(node->problem, level, node);
+                x = new_node->problem[b_loc];
+                new_node->problem[b_loc] = new_node->problem[move_left];
+                new_node->problem[move_left] = x;
+
+                string string_a = convertToString(node->problem, size);
+                string string_b = convertToString(new_node->problem, size);
+                cout << "string a: " << string_a << endl;
+                cout << "string b: " << string_b << endl;
+                if(string_a != string_b)
+                    duplicates = 1;                
+
+                if(duplicates)
+                    heuristic.push_back(new_node);                        
+            }
+
+            // Move tile right
+            if(move_right > -1 && move_right < size)
+            {
+                Node* new_node = newNode(node->problem, level, node);
+                x = new_node->problem[b_loc];
+                new_node->problem[b_loc] = new_node->problem[move_right];
+                new_node->problem[move_right] = x;
+
+                string string_a = convertToString(node->problem, size);
+                string string_b = convertToString(new_node->problem, size);
+                cout << "string a: " << string_a << endl;
+                cout << "string b: " << string_b << endl;
+
+                if(string_a != string_b)
+                    duplicates = 1;                
+
+                if(duplicates)
+                    heuristic.push_back(new_node);
+            }
+
+            // Move tile up
+            if(move_up > -1 && move_up < size)
+            {
+                Node* new_node = newNode(node->problem, level, node);
+                x = new_node->problem[b_loc];
+                new_node->problem[b_loc] = new_node->problem[move_up];
+                new_node->problem[move_up] = x;
+
+                string string_a = convertToString(node->problem, size);
+                string string_b = convertToString(new_node->problem, size);
+                cout << "string a: " << string_a << endl;
+                cout << "string b: " << string_b << endl;
+                if(string_a != string_b)
+                    duplicates = 1;                
+
+                if(duplicates)
+                    heuristic.push_back(new_node);
+            }
+
+            // Move tile down
+            if(move_down > -1 && move_down < size)
+            {
+                Node* new_node = newNode(node->problem, level, node);
+                x = new_node->problem[b_loc];
+                new_node->problem[b_loc] = new_node->problem[move_down];
+                new_node->problem[move_down] = x;
+
+                string string_a = convertToString(node->problem, size);
+                string string_b = convertToString(new_node->problem, size);
+                cout << "string a: " << string_a << endl;
+                cout << "string b: " << string_b << endl;
+
+                if(string_a != string_b)
+                    duplicates = 1;                
+
+                if(duplicates)
+                    heuristic.push_back(new_node);
+            }   
+
+            // Push by shortest heuristic
+            vector<Node*> temp;
+            for(int i = 0; i < heuristic.size(); i++)
+                heuristic[i]->heuristic = misplacedTileHeuristic(heuristic[i]);
+            temp = sortVect(heuristic);
+            nodes.push(temp[0]);
+            heuristic.clear();
+        }   
+    }
+}
+
 int main(int argc, char** argv) 
 {
     int const SIZE = 9;
     char user[SIZE] = {'1', '2', '3', '4', '5', 'b', '6', '7', '8'};
     Node* node = newNode(user, 3, NULL);
     Node* temp;
-        temp    = makeNode(user, SIZE);
+        temp    = makeNodeHeuristic(user, SIZE);
     for(int i = 0; i < SIZE; i++)
         cout << temp->problem[i] << " ";
     cout << endl;
-    
-    
-    //'b', '2', '3', '4', '8', '1', '7', '6', '5'
     return 0;
 }
 

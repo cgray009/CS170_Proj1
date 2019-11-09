@@ -4,6 +4,8 @@
 #include <queue>
 #include <vector>
 #include<algorithm>
+#include <string>
+#include <sstream>
 using namespace std;
 
 // state space tree nodes 
@@ -71,7 +73,7 @@ Node* makeNodeUniform(char problem[], int size)
     // search tree; 
     queue<Node*> nodes;
     vector<int> queue_size;
-    vector<Node*> popped_nodes;
+    vector<Node*> heuristic;
     nodes.push(root);
     int size_nodes = nodes.size();
     int const SIZE = 9;
@@ -83,11 +85,10 @@ Node* makeNodeUniform(char problem[], int size)
     
     while(!nodes.empty())
     {
-        int duplicates = 0;
         Node* node = nodes.front();
-        popped_nodes.push_back(node);
+        //popped_nodes.push_back(node);
         nodes.pop();
-        int popped_size = popped_nodes.size();
+        //int popped_size = popped_nodes.size();
         int move_left, move_right, move_up, move_down = 0;
 
         
@@ -96,15 +97,17 @@ Node* makeNodeUniform(char problem[], int size)
 
         if(string_a == string_b)
         {
-            node->num_expand = expand_count;
-            node->queueSize = queue_size;
+            //node->num_expand = expand_count;
+            //node->queueSize = queue_size;
             return node;
         }
         else
         {
-            int b_loc = 0;
+            int b_loc;
             expand_count += 1;
 
+            cout << "Expand Count: " << expand_count << endl;
+            
             // Get b's location
             for(int i = 0; i < SIZE; i++)
                 if(node->problem[i] == 'b')
@@ -120,7 +123,7 @@ Node* makeNodeUniform(char problem[], int size)
             level += 1;
 
             // Move tile left
-            if(move_left > -1 && move_left < size)
+            if(((move_left > -1) && (move_left < size)) && ((b_loc != 0) && (b_loc != 3) && (b_loc != 6)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -128,20 +131,14 @@ Node* makeNodeUniform(char problem[], int size)
                 new_node->problem[move_left] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);   
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                {
-                    nodes.push(new_node);
-                    queue_size.push_back(nodes.size());
-                }
+                    nodes.push(new_node);       
             }
 
             // Move tile right
-            if(move_right > -1 && move_right < size)
+            if(((move_right > -1) && (move_right < size)) && ((b_loc != 2) && (b_loc != 5) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -149,38 +146,29 @@ Node* makeNodeUniform(char problem[], int size)
                 new_node->problem[move_right] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
+                string string_b = convertToString(new_node->problem, size);   
+                
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
                     nodes.push(new_node);
             }
 
             // Move tile up
-            if(move_up > -1 && move_up < size)
+            if(((move_up > -1) && (move_up < size)) && ((b_loc != 0) && (b_loc != 1) && (b_loc != 2)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
                 new_node->problem[b_loc] = new_node->problem[move_up];
                 new_node->problem[move_up] = x;
-
+                
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);  
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                {
                     nodes.push(new_node);
-                    queue_size.push_back(nodes.size());
-                }
             }
 
             // Move tile down
-            if(move_down > -1 && move_down < size)
+            if(((move_down > -1) && (move_down < size)) && ((b_loc != 6) && (b_loc != 7) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -188,18 +176,11 @@ Node* makeNodeUniform(char problem[], int size)
                 new_node->problem[move_down] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
-                if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                {
-                    nodes.push(new_node);
-                    queue_size.push_back(nodes.size());
-                }
+                string string_b = convertToString(new_node->problem, size);   
                 
-            }   
+                if(string_a != string_b)
+                    nodes.push(new_node);  
+            }  
         }   
     }
 }
@@ -414,7 +395,6 @@ Node* makeNodeManhattan(char problem[], int size)
     // search tree; 
     queue<Node*> nodes;
     vector<int> queue_size;
-    vector<Node*> popped_nodes;
     vector<Node*> heuristic;
     nodes.push(root);
     int size_nodes = nodes.size();
@@ -427,11 +407,8 @@ Node* makeNodeManhattan(char problem[], int size)
     
     while(!nodes.empty())
     {
-        int duplicates = 0;
         Node* node = nodes.front();
-        popped_nodes.push_back(node);
         nodes.pop();
-        int popped_size = popped_nodes.size();
         int move_left, move_right, move_up, move_down = 0;
 
         
@@ -440,15 +417,17 @@ Node* makeNodeManhattan(char problem[], int size)
 
         if(string_a == string_b)
         {
-            node->num_expand = expand_count;
-            node->queueSize = queue_size;
+            //node->num_expand = expand_count;
+            //node->queueSize = queue_size;
             return node;
         }
         else
         {
-            int b_loc = 0;
+            int b_loc;
             expand_count += 1;
 
+            cout << "Expand Count: " << expand_count << endl;
+            
             // Get b's location
             for(int i = 0; i < SIZE; i++)
                 if(node->problem[i] == 'b')
@@ -464,7 +443,7 @@ Node* makeNodeManhattan(char problem[], int size)
             level += 1;
 
             // Move tile left
-            if(move_left > -1 && move_left < size)
+            if(((move_left > -1) && (move_left < size)) && ((b_loc != 0) && (b_loc != 3) && (b_loc != 6)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -472,17 +451,14 @@ Node* makeNodeManhattan(char problem[], int size)
                 new_node->problem[move_left] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);   
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                    heuristic.push_back(new_node);                        
+                    heuristic.push_back(new_node);
             }
 
             // Move tile right
-            if(move_right > -1 && move_right < size)
+            if(((move_right > -1) && (move_right < size)) && ((b_loc != 2) && (b_loc != 5) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -490,35 +466,29 @@ Node* makeNodeManhattan(char problem[], int size)
                 new_node->problem[move_right] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
+                string string_b = convertToString(new_node->problem, size);   
+                
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
                     heuristic.push_back(new_node);
             }
 
             // Move tile up
-            if(move_up > -1 && move_up < size)
+            if(((move_up > -1) && (move_up < size)) && ((b_loc != 0) && (b_loc != 1) && (b_loc != 2)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
                 new_node->problem[b_loc] = new_node->problem[move_up];
                 new_node->problem[move_up] = x;
-
+                
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);  
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
                     heuristic.push_back(new_node);
             }
 
             // Move tile down
-            if(move_down > -1 && move_down < size)
+            if(((move_down > -1) && (move_down < size)) && ((b_loc != 6) && (b_loc != 7) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -526,21 +496,21 @@ Node* makeNodeManhattan(char problem[], int size)
                 new_node->problem[move_down] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
+                string string_b = convertToString(new_node->problem, size);   
+                
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                    heuristic.push_back(new_node);
-            }   
+                    heuristic.push_back(new_node);  
+            }  
 
             // Push by shortest heuristic
             vector<Node*> temp;
             for(int i = 0; i < heuristic.size(); i++)
                 heuristic[i]->heuristic = manhattanHeuristic(heuristic[i]);
             temp = sortVect(heuristic);
-            nodes.push(temp[0]);
+            
+            for(int i = 0; i < temp.size(); i++)
+                nodes.push(temp[i]);
+            
             queue_size.push_back(nodes.size());
             heuristic.clear();
         }   
@@ -554,7 +524,7 @@ int misplacedTileHeuristic(struct Node* node)
     int h_n = 0;
     
     for(int i = 0; i < SIZE; i++)
-        if(node->problem[i] != goal_node[i])
+        if((node->problem[i] != 'b') && (node->problem[i] != goal_node[i]))
             h_n += 1;
     
     return node->level + h_n;
@@ -570,7 +540,6 @@ Node* makeNodeMisplaced(char problem[], int size)
     // search tree; 
     queue<Node*> nodes;
     vector<int> queue_size;
-    vector<Node*> popped_nodes;
     vector<Node*> heuristic;
     nodes.push(root);
     int size_nodes = nodes.size();
@@ -583,11 +552,10 @@ Node* makeNodeMisplaced(char problem[], int size)
     
     while(!nodes.empty())
     {
-        int duplicates = 0;
         Node* node = nodes.front();
-        popped_nodes.push_back(node);
+        //popped_nodes.push_back(node);
         nodes.pop();
-        int popped_size = popped_nodes.size();
+        //int popped_size = popped_nodes.size();
         int move_left, move_right, move_up, move_down = 0;
 
         
@@ -596,15 +564,17 @@ Node* makeNodeMisplaced(char problem[], int size)
 
         if(string_a == string_b)
         {
-            node->num_expand = expand_count;
-            node->queueSize = queue_size;
+            //node->num_expand = expand_count;
+            //node->queueSize = queue_size;
             return node;
         }
         else
         {
-            int b_loc = 0;
+            int b_loc;
             expand_count += 1;
 
+            cout << "Expand Count: " << expand_count << endl;
+            
             // Get b's location
             for(int i = 0; i < SIZE; i++)
                 if(node->problem[i] == 'b')
@@ -620,7 +590,7 @@ Node* makeNodeMisplaced(char problem[], int size)
             level += 1;
 
             // Move tile left
-            if(move_left > -1 && move_left < size)
+            if(((move_left > -1) && (move_left < size)) && ((b_loc != 0) && (b_loc != 3) && (b_loc != 6)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -628,17 +598,14 @@ Node* makeNodeMisplaced(char problem[], int size)
                 new_node->problem[move_left] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);   
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                    heuristic.push_back(new_node);                        
+                    heuristic.push_back(new_node);
             }
 
             // Move tile right
-            if(move_right > -1 && move_right < size)
+            if(((move_right > -1) && (move_right < size)) && ((b_loc != 2) && (b_loc != 5) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -646,35 +613,29 @@ Node* makeNodeMisplaced(char problem[], int size)
                 new_node->problem[move_right] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
+                string string_b = convertToString(new_node->problem, size);   
+                
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
                     heuristic.push_back(new_node);
             }
 
             // Move tile up
-            if(move_up > -1 && move_up < size)
+            if(((move_up > -1) && (move_up < size)) && ((b_loc != 0) && (b_loc != 1) && (b_loc != 2)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
                 new_node->problem[b_loc] = new_node->problem[move_up];
                 new_node->problem[move_up] = x;
-
+                
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
+                string string_b = convertToString(new_node->problem, size);  
                 
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
                     heuristic.push_back(new_node);
             }
 
             // Move tile down
-            if(move_down > -1 && move_down < size)
+            if(((move_down > -1) && (move_down < size)) && ((b_loc != 6) && (b_loc != 7) && (b_loc != 8)))
             {
                 Node* new_node = newNode(node->problem, level, node);
                 x = new_node->problem[b_loc];
@@ -682,28 +643,27 @@ Node* makeNodeMisplaced(char problem[], int size)
                 new_node->problem[move_down] = x;
 
                 string string_a = convertToString(node->problem, size);
-                string string_b = convertToString(new_node->problem, size);
-
+                string string_b = convertToString(new_node->problem, size);   
+                
                 if(string_a != string_b)
-                    duplicates = 1;                
-
-                if(duplicates)
-                    heuristic.push_back(new_node);
-            }   
+                    heuristic.push_back(new_node);  
+            }  
 
             // Push by shortest heuristic
             vector<Node*> temp;
             for(int i = 0; i < heuristic.size(); i++)
-                heuristic[i]->heuristic = manhattanHeuristic(heuristic[i]);
+                heuristic[i]->heuristic = misplacedTileHeuristic(heuristic[i]);
             temp = sortVect(heuristic);
-            nodes.push(temp[0]);
+            
+            for(int i = 0; i < temp.size(); i++)
+                nodes.push(temp[i]);
+            
             queue_size.push_back(nodes.size());
             heuristic.clear();
         }   
     }
 }
-#include <string>
-#include <sstream>
+
 int main(int argc, char** argv) 
 {
     string puzzle_type;
@@ -714,10 +674,7 @@ int main(int argc, char** argv)
     
     Node* node = newNode(user, 3, NULL);
     Node* temp;
-    /*temp = makeNodeHeuristic(user, SIZE);
-    for(int i = 0; i < SIZE; i++)
-        cout << temp->problem[i] << " ";
-    cout << endl; */
+  
     
     cout << "Welcome to Bertie Woosters 8-puzzle solver.\n" 
          << "Type “1” to use a default puzzle, or “2” to\n"
@@ -748,12 +705,12 @@ int main(int argc, char** argv)
             input_a.append(input_b);
             input_a.append(input_c);
             
-            char input_arr[input_a.length()];
-            for (int i = 0; i < sizeof(input_arr); i++) 
+            char input_arr[9];
+            for (int i = 0; i < 9; i++) 
                 input_arr[i] = input_a[i]; 
             
-            char problem_arr[input_a.length()];
-            for (int i = 0; i < sizeof(input_arr); i++) 
+            char problem_arr[9];
+            for (int i = 0; i < 9; i++) 
             {
                 if(input_arr[i] == '0')
                     problem_arr[i] = 'b';
@@ -794,73 +751,72 @@ int main(int argc, char** argv)
                     cout << input_arr[i] << " ";
             }
             cout << endl;
-                
-            switch(search)
-            {
-                case 3:
-                    temp = makeNodeMisplaced(problem_arr, SIZE); 
-                    
-                    // Depth 1 state
-                    int h_n = temp->parent->parent->heuristic - temp->parent->parent->level;
-                    cout << "\nThe best state to expand with a "; 
-                    cout << "g(n) = " << temp->parent->parent->level << " and h(n) = ";
-                    cout << h_n << " is…\n\t";
-                    
-                    for(int i = 0; i < 3; i++)
-                        cout << temp->parent->parent->problem[i] << " ";
-                    cout << endl << "\t";
+            
+            
+            
+            
+            temp = makeNodeManhattan(problem_arr, SIZE); 
 
-                    for(int i = 3; i < 6; i++)
-                        cout << temp->parent->parent->problem[i] << " ";
-                    cout << endl << "\t";
+            // Depth 1 state
+            int h_n = temp->parent->parent->heuristic - temp->parent->parent->level;
+            cout << "\nThe best state to expand with a "; 
+            cout << "g(n) = " << temp->parent->parent->level << " and h(n) = ";
+            cout << h_n << " is…\n\t";
 
-                    for(int i = 6; i < SIZE; i++)
-                        cout << temp->parent->parent->problem[i] << " ";
-                    cout << endl; 
+            for(int i = 0; i < 3; i++)
+                cout << temp->parent->parent->problem[i] << " ";
+            cout << endl << "\t";
 
-                    // Depth 2 state
-                    h_n = temp->parent->heuristic - temp->parent->level;
-                    cout << "\nThe best state to expand with a "; 
-                    cout << "g(n) = " << temp->parent->level << " and h(n) = ";
-                    cout << h_n << " is…\n\t";
-                    
-                    for(int i = 0; i < 3; i++)
-                        cout << temp->parent->problem[i] << " ";
-                    cout << endl << "\t";
+            for(int i = 3; i < 6; i++)
+                cout << temp->parent->parent->problem[i] << " ";
+            cout << endl << "\t";
 
-                    for(int i = 3; i < 6; i++)
-                        cout << temp->parent->problem[i] << " ";
-                    cout << endl << "\t";
+            for(int i = 6; i < SIZE; i++)
+                cout << temp->parent->parent->problem[i] << " ";
+            cout << endl; 
 
-                    for(int i = 6; i < SIZE; i++)
-                        cout << temp->parent->problem[i] << " ";
-                    cout << endl;  
-                    
-                    // Goal state
-                    h_n = temp->heuristic - temp->level;
-                    cout << "\nThe best state to expand with a "; 
-                    cout << "g(n) = " << temp->level << " and h(n) = ";
-                    cout << h_n << " is…\n\t";
-                    
-                    for(int i = 0; i < 3; i++)
-                        cout << temp->problem[i] << " ";
-                    cout << endl << "\t";
+            // Depth 2 state
+            h_n = temp->parent->heuristic - temp->parent->level;
+            cout << "\nThe best state to expand with a "; 
+            cout << "g(n) = " << temp->parent->level << " and h(n) = ";
+            cout << h_n << " is…\n\t";
 
-                    for(int i = 3; i < 6; i++)
-                        cout << temp->problem[i] << " ";
-                    cout << endl << "\t";
+            for(int i = 0; i < 3; i++)
+                cout << temp->parent->problem[i] << " ";
+            cout << endl << "\t";
 
-                    for(int i = 6; i < SIZE; i++)
-                        cout << temp->problem[i] << " ";
-                    cout << endl; 
-                    
-                    cout << "\nExpand Total: " << temp->num_expand << endl;
-                    cout << "Max number of nodes in queue at one time:\n";
-                    cout << *max_element(temp->queueSize.begin(), temp->queueSize.end());
+            for(int i = 3; i < 6; i++)
+                cout << temp->parent->problem[i] << " ";
+            cout << endl << "\t";
 
-                    break;
-            }
+            for(int i = 6; i < SIZE; i++)
+                cout << temp->parent->problem[i] << " ";
+            cout << endl;  
 
+            // Goal state
+            h_n = temp->heuristic - temp->level;
+            cout << "\nThe best state to expand with a "; 
+            cout << "g(n) = " << temp->level << " and h(n) = ";
+            cout << h_n << " is…\n\t";
+
+            for(int i = 0; i < 3; i++)
+                cout << temp->problem[i] << " ";
+            cout << endl << "\t";
+
+            for(int i = 3; i < 6; i++)
+                cout << temp->problem[i] << " ";
+            cout << endl << "\t";
+
+            for(int i = 6; i < SIZE; i++)
+                cout << temp->problem[i] << " ";
+            cout << endl; 
+
+            cout << "\nExpand Total: " << temp->num_expand << endl;
+            cout << "Max number of nodes in queue at one time:\n";
+            cout << *max_element(temp->queueSize.begin(), temp->queueSize.end());
+
+            
+            
             break;
     }
     
